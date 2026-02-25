@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Patient Management</title>
+    <style>
+        body {
+            font-family: Arial;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        button {
+            padding: 5px 10px;
+            margin: 5px;
+            cursor: pointer;
+        }
+        .card {
+            background: white;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Patient Management System</h1>
+
+<button onclick="loadPatients()">Load All Patients</button>
+
+<input type="text" id="patientId" placeholder="Enter Patient ID">
+<button onclick="getSinglePatient()">Get Patient</button>
+
+<div id="output"></div>
+
+<script>
+    const baseURL = "http://127.0.0.1:8000";
+
+    // Load all patients
+    async function loadPatients() {
+        const response = await fetch(`${baseURL}/patients`);
+        const data = await response.json();
+
+        let output = "";
+        for (let id in data) {
+            const patient = data[id];
+            output += `
+                <div class="card">
+                    <h3>${id} - ${patient.name}</h3>
+                    <p>City: ${patient.city}</p>
+                    <p>Age: ${patient.age}</p>
+                    <p>BMI: ${patient.bmi} (${patient.verdict})</p>
+                    <button onclick="deletePatient('${id}')">Delete</button>
+                </div>
+            `;
+        }
+
+        document.getElementById("output").innerHTML = output;
+    }
+
+    // Get single patient
+    async function getSinglePatient() {
+        const id = document.getElementById("patientId").value;
+
+        const response = await fetch(`${baseURL}/patients/${id}`);
+
+        if (!response.ok) {
+            alert("Patient not found");
+            return;
+        }
+
+        const patient = await response.json();
+
+        document.getElementById("output").innerHTML = `
+            <div class="card">
+                <h3>${patient.name}</h3>
+                <p>City: ${patient.city}</p>
+                <p>Age: ${patient.age}</p>
+                <p>Height: ${patient.height}</p>
+                <p>Weight: ${patient.weight}</p>
+                <p>BMI: ${patient.bmi} (${patient.verdict})</p>
+            </div>
+        `;
+    }
+
+    // Delete patient
+    async function deletePatient(id) {
+        await fetch(`${baseURL}/patients/${id}`, {
+            method: "DELETE"
+        });
+
+        alert("Patient Deleted");
+        loadPatients();
+    }
+</script>
+
+</body>
+</html>
